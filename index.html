@@ -158,7 +158,7 @@
           <div class="searchhub">
             <form class="searchbox" id="intentForm"><span class="spark" aria-hidden="true">✦</span><input id="intent" autocomplete="off" aria-label="Опиши свою задачу" placeholder="Хочу..."><button class="mic" type="button" id="mic" title="Голосовой ввод" aria-label="Голосовой ввод">🎙</button><button class="action" type="submit">Поиск</button></form>
             <div class="search-history" id="searchHistory" aria-label="Недавние поисковые запросы" hidden></div>
-            <p class="notice">Ищи услугу или конкретную компанию по названию. Большинство точек загружается из OpenStreetMap; отдельные карточки дополнены сведениями с сайтов организаций. Каталог пока неполный.</p>
+            <p class="notice">Ищи услугу или компанию по названию. Наш каталог использует OpenStreetMap и небольшой справочник реальных мест. Если список неполный, открой поиск в Яндекс Картах.</p>
           </div>
           <div class="trustbar" aria-label="Возможности прототипа">
             <span><b>⌖</b> Поиск рядом</span><span><b>✦</b> Подбор услуг</span><span><b>◈</b> Маршруты</span>
@@ -294,6 +294,7 @@
       const mapHref=coordsValid?`https://www.openstreetmap.org/?mlat=${encodeURIComponent(p.lat)}&mlon=${encodeURIComponent(p.lon)}#map=17/${encodeURIComponent(p.lat)}/${encodeURIComponent(p.lon)}`:'';
       let act=`<button type="button" class="primary" data-detail="${safe(p.id)}">Открыть карточку ↗</button>`+(coordsValid?`<a href="${mapHref}" target="_blank" rel="noopener noreferrer">⌖ Карта</a>`:'');
       act+=`<button type="button" data-review="${safe(p.id)}">☆ Оценить</button>`;
+      if(state.mode==='live')act+=`<a href="${safe(yandexSearchUrl([p.name,p.address||state.city].filter(Boolean).join(' ')))}" target="_blank" rel="noopener noreferrer">↗ Яндекс Карты</a>`;
       if(p.phone&&/^\+?[\d\s()\-]{6,25}$/.test(p.phone))act+=`<a href="tel:${safe(p.phone.replace(/[^+\d]/g,''))}">☎ Позвонить</a>`;
       if(p.booking&&/^https:\/\//i.test(p.booking))act+=`<a href="${safe(p.booking)}" target="_blank" rel="noopener noreferrer">↗ Запись на сайте</a>`;if(p.website&&/^https?:\/\//i.test(p.website)){let url;try{url=new URL(p.website);if(!['https:','http:'].includes(url.protocol))url=null}catch{url=null}if(url)act+=`<a href="${safe(url.href)}" target="_blank" rel="noopener noreferrer">↗ Сайт</a>`}
       const meta=p.local?'Добавлено только на этом устройстве':p.source==='public-directory'?'Адрес из открытого справочника · сведения уточняйте':p.curated?'Контакты с сайта компании · точка на карте приблизительная':state.mode==='live'?'Данные OpenStreetMap':'Вымышленная организация · демонстрация';
@@ -428,6 +429,7 @@
       if(place.phone&&/^\+?[\d\s()\-]{6,25}$/.test(place.phone))links.push('<a href="tel:'+safe(place.phone.replace(/[^+\d]/g,''))+'">☎ '+safe(place.phone)+'</a>');
       if(place.website&&/^https?:\/\//i.test(place.website))links.push('<a class="primary" href="'+safe(place.website)+'" target="_blank" rel="noopener noreferrer">↗ Сайт'+(place.booking?' и онлайн-запись':'')+'</a>');
       if(Number.isFinite(place.lat)&&Number.isFinite(place.lon))links.push('<a href="https://www.openstreetmap.org/?mlat='+encodeURIComponent(place.lat)+'&mlon='+encodeURIComponent(place.lon)+'#map=17/'+encodeURIComponent(place.lat)+'/'+encodeURIComponent(place.lon)+'" target="_blank" rel="noopener noreferrer">⌖ На карте'+(place.approx?' (ориентир)':'')+'</a>');
+      if(state.mode==='live')links.push('<a href="'+safe(yandexSearchUrl([place.name,place.address||state.city].filter(Boolean).join(' ')))+'" target="_blank" rel="noopener noreferrer">↗ Найти в Яндекс Картах</a>');
       $('#placeActions').innerHTML=links.join('');
       $('#placeDialog').showModal();
     }
