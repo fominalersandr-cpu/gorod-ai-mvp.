@@ -132,6 +132,12 @@
       .panel{padding:19px;border-radius:23px}
       .searchbox{border-radius:18px}
     }
+
+    .yandex-bridge{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;margin:10px 0 20px;border:1px solid rgba(181,200,226,.23);border-radius:19px;background:linear-gradient(112deg,rgba(33,46,68,.76),rgba(18,28,46,.91));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+    .yandex-copy{display:grid;gap:4px;max-width:550px}.yandex-copy strong{font-size:14px;color:#eff5ff;font-weight:630}.yandex-copy span{font-size:12px;line-height:1.6;color:#a2b5cd}
+    .yandex-button{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;padding:13px 17px;border:1px solid rgba(180,211,242,.41);background:linear-gradient(125deg,#223954,#192c47);color:#f0f7ff;border-radius:13px;font-weight:620;font-size:13px;transition:transform .16s,background .16s}
+    .yandex-button:hover{transform:translateY(-1px);background:#324e73}
+    @media(max-width:720px){.yandex-bridge{flex-direction:column;align-items:stretch;padding:15px}.yandex-button{width:100%;white-space:normal;text-align:center}}
   </style>
 </head>
 <body>
@@ -167,6 +173,10 @@
         <div class="sectiontitle"><div><div class="eyebrow" style="margin:0 0 8px">ПОИСК ПО ГОРОДУ</div><h2 id="resultsTitle">Парикмахерские рядом</h2></div><div class="seg" role="group" aria-label="Источник данных"><button type="button" data-mode="demo">Демо</button><button type="button" class="active" data-mode="live">Реальные места</button></div></div>
         <div class="filters"><button id="filterOpen" class="chip" aria-pressed="false" type="button">◷ Работает сейчас</button><button id="filterNearby" class="chip" aria-pressed="false" type="button">⌖ До 3 км</button><button id="filterRating" class="chip" aria-pressed="false" type="button">★ От 4,5</button><button id="clearFilters" class="chip" type="button">Сбросить фильтры ×</button></div>
         <div class="row2" style="margin-bottom:17px"><div class="location-row"><form id="cityForm" class="city-form"><input id="cityInput" list="cityList" aria-label="Город" value="Белгород" required placeholder="Введите город"><datalist id="cityList"><option value="Белгород"><option value="Москва"><option value="Санкт-Петербург"><option value="Воронеж"><option value="Курск"><option value="Казань"><option value="Краснодар"><option value="Ростов-на-Дону"><option value="Екатеринбург"><option value="Новосибирск"></datalist><button type="submit">Выбрать</button></form><button id="geo" type="button" class="ghost">📍 Моё местоположение</button></div><div class="source-actions"><span class="minor" id="sourceInfo" role="status">Подключаем организации OpenStreetMap…</span><button id="refreshPlaces" type="button" class="ghost">↻ Обновить</button></div></div>
+        <div class="yandex-bridge">
+          <div class="yandex-copy"><strong>Не нашлось нужного места?</strong><span>Открой полный поиск на Яндекс Картах. Результаты показываются на сайте Яндекса и не копируются в наш каталог.</span></div>
+          <a class="yandex-button" id="yandexSearch" href="https://yandex.ru/maps/" target="_blank" rel="noopener noreferrer">↗ Найти в Яндекс Картах</a>
+        </div>
         <div class="viewbar"><span class="minor">Как показать найденные места?</span><div class="viewgroup" role="group" aria-label="Формат выдачи"><button data-view="split" class="active" aria-pressed="true" type="button">▤ Карта и список</button><button data-view="map" aria-pressed="false" type="button">▣ Большая карта</button></div></div>
         <div class="results-shell" id="resultsShell"><div class="result-column"><div class="result-head"><span class="dot"></span><span class="minor" id="count">Подбор предложений</span></div><div id="results" class="results" aria-live="polite"></div></div><div class="mapbox" id="mapbox"><div class="maptools" role="group" aria-label="Оформление карты"><button data-map-style="standard" class="active" aria-pressed="true" type="button">Схема</button><button data-map-style="contrast" aria-pressed="false" type="button">Тёмная</button></div><div class="maplabel" id="maplabel">🗺 Карта · OpenStreetMap (MVP)</div><div id="map" role="region" aria-label="Интерактивная карта организаций"></div></div></div>
       </section>
@@ -248,7 +258,7 @@
       };
       return icons[id]||icons.market;
     }
-    const state={cat:'hair',mode:'live',city:'Белгород',lat:50.5997,lon:36.5983,location:false,filters:{open:false,near:false,rating:false},priceMax:null,searchTerm:'',live:[],loading:false,requestId:0,map:null,markers:null,viewMode:'split',mapStyle:'standard'};
+    const state={cat:'hair',mode:'live',city:'Белгород',lat:50.5997,lon:36.5983,location:false,filters:{open:false,near:false,rating:false},priceMax:null,searchTerm:'',lastQuery:'',live:[],loading:false,requestId:0,map:null,markers:null,viewMode:'split',mapStyle:'standard'};
     const safe=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const stored=(k,fallback)=>{try{return JSON.parse(localStorage.getItem(k))??fallback}catch{return fallback}};
     const reviews=stored('cityai_reviews',{}); const businesses=stored('cityai_businesses',[]);
@@ -262,11 +272,22 @@
     function hoursInfo(p){if(typeof p.start==='number'){let h=timeNow();let yes=p.start===0&&p.end===24 || h>=p.start&&h<p.end;return {known:true,open:yes,label:yes?'● Открыто':'◷ Сейчас закрыто'}};return {known:false,open:false,label:p.hours?'◷ '+p.hours:'◷ Время работы не указано'};}
     function reviewInfo(p){let r=reviews[p.id]||[];return r.length?{score:(r.reduce((a,b)=>a+Number(b.rating),0)/r.length).toFixed(1),count:r.length,local:true}:(typeof p.stars==='number'?{score:p.stars.toFixed(1),count:p.ratings,local:false}:{score:null,count:0,local:false})}
     function initCategories(){const wrap=$('#categories');wrap.innerHTML=CATS.map(c=>`<button class="cat ${state.cat===c.id?'active':''}" type="button" data-cat="${c.id}"><span class="iconwrap"><span class="icon" aria-hidden="true">${iconSVG(c.id)}</span></span><b>${safe(c.name)}</b></button>`).join('');wrap.addEventListener('click',ev=>{const b=ev.target.closest('[data-cat]');if(b)selectCat(b.dataset.cat)});$('#businessCat').innerHTML=CATS.map(c=>`<option value="${c.id}">${safe(c.title)}</option>`).join('')}
-    function selectCat(id){state.cat=id;state.searchTerm='';state.priceMax=null;state.filters={open:false,near:false,rating:false};updateFilters();$$('[data-cat]').forEach(e=>e.classList.toggle('active',e.dataset.cat===id));$('#resultsTitle').textContent=catById(id).title+' рядом';if(state.mode==='live')loadLive();else render();}
+    function selectCat(id){state.cat=id;state.searchTerm='';state.lastQuery='';state.priceMax=null;state.filters={open:false,near:false,rating:false};updateFilters();$$('[data-cat]').forEach(e=>e.classList.toggle('active',e.dataset.cat===id));$('#resultsTitle').textContent=catById(id).title+' рядом';if(state.mode==='live')loadLive();else render();}
     function setMode(mode){state.mode=mode;$$('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));$('#sourceInfo').textContent=mode==='demo'?'Сейчас: вымышленные демонстрационные карточки':'Источник: OpenStreetMap · Overpass API';$('#maplabel').textContent=mode==='demo'?'🗺 Карта · вымышленные точки':'🗺 Карта · реальные точки OpenStreetMap';if(mode==='live')loadLive();else{state.loading=false;state.requestId++;render()}}
     function getDemo(){let shiftLat=state.lat-50.5997,shiftLon=state.lon-36.5983;let rows=demoSeed.map(p=>({...p,lat:p.lat+shiftLat,lon:p.lon+shiftLon})).concat(businesses.map((b,i)=>({...b,id:b.id||`local-${i}`,stars:null,ratings:0,lat:state.lat+(.001*(i%3)),lon:state.lon+(.001*(i%4)),hours:'График не указан',local:true})));return rows.filter(p=>p.cat===state.cat)}
+
+    function yandexSearchUrl(q){
+      return 'https://yandex.ru/maps/?text='+encodeURIComponent(String(q||'').slice(0,220));
+    }
+    function updateYandexSearch(){
+      const el=$('#yandexSearch');if(!el)return;
+      const place=state.city==='Моё местоположение'?'':state.city;
+      const q=[place,state.lastQuery||catById(state.cat).title].filter(Boolean).join(' ');
+      el.href=yandexSearchUrl(q);
+      el.setAttribute('aria-label','Поиск в Яндекс Картах: '+q);
+    }
     function getRows(){let curated=curatedHere().filter(p=>p.cat===state.cat);let data=state.mode==='demo'?getDemo():[...curated,...state.live.filter(p=>!curated.some(c=>norm(c.name)===norm(p.name)&&(!c.address||!p.address||norm(c.address)===norm(p.address))))];let rows=data.filter(p=>{if(state.searchTerm&&!norm(p.name+' '+(p.address||'')).includes(state.searchTerm))return false;const r=reviewInfo(p),h=hoursInfo(p),d=distance(p);if(state.filters.open&&!h.known)return false;if(state.filters.open&&!h.open)return false;if(state.filters.near&&(d===null||d>3))return false;if(state.filters.rating&&(!r.score||Number(r.score)<4.5))return false;if(state.priceMax!==null&&p.price!==null&&p.price>state.priceMax)return false;return true});return rows.sort((a,b)=> (distance(a)??999)-(distance(b)??999))}
-    function render(){updateFilters();$('#resultsTitle').textContent=state.searchTerm?'Результаты: '+state.searchTerm:catById(state.cat).title+' рядом';if(state.loading&&!getRows().length){$('#count').textContent='Ищем реальные организации…';$('#results').innerHTML='<div class="empty">⏳ Загружаем организации из открытой карты. Если нужного места нет в базе, оно может не появиться.</div>';drawMap([]);return}const rows=getRows(),ads=state.mode==='demo'?rows.filter(p=>p.sponsored):[],normal=rows.filter(p=>!p.sponsored);$('#count').textContent=`Найдено карточек: ${rows.length}${state.mode==='demo'?' · тестовые данные':''}`;let html='';if(ads.length){html+='<div class="minor" style="margin-bottom:3px">Рекламные размещения · пример</div>'+ads.map(cardHTML).join('')+'<div class="minor" style="margin:12px 0 4px">Остальные результаты · по расстоянию</div>'}if(normal.length)html+=normal.map(cardHTML).join('');if(!rows.length)html=state.searchTerm?'<div class="empty">В нашем каталоге пока нет «'+safe(state.searchTerm)+'». OpenStreetMap содержит не все организации. Попробуй другую категорию или уточни название.</div>':'<div class="empty">Ничего не найдено по выбранным фильтрам. Сбрось фильтры, поменяй категорию или город.</div>';$('#results').innerHTML=html;drawMap(rows)}
+    function render(){updateYandexSearch();updateFilters();$('#resultsTitle').textContent=state.searchTerm?'Результаты: '+state.searchTerm:catById(state.cat).title+' рядом';if(state.loading&&!getRows().length){$('#count').textContent='Ищем реальные организации…';$('#results').innerHTML='<div class="empty">⏳ Загружаем организации из открытой карты. Если нужного места нет в базе, оно может не появиться.</div>';drawMap([]);return}const rows=getRows(),ads=state.mode==='demo'?rows.filter(p=>p.sponsored):[],normal=rows.filter(p=>!p.sponsored);$('#count').textContent=`Найдено карточек: ${rows.length}${state.mode==='demo'?' · тестовые данные':''}`;let html='';if(ads.length){html+='<div class="minor" style="margin-bottom:3px">Рекламные размещения · пример</div>'+ads.map(cardHTML).join('')+'<div class="minor" style="margin:12px 0 4px">Остальные результаты · по расстоянию</div>'}if(normal.length)html+=normal.map(cardHTML).join('');if(!rows.length)html=state.searchTerm?'<div class="empty">В нашем каталоге пока нет «'+safe(state.searchTerm)+'». OpenStreetMap содержит не все организации. Попробуй другую категорию или уточни название.</div>':'<div class="empty">Ничего не найдено по выбранным фильтрам. Сбрось фильтры, поменяй категорию или город.</div>';$('#results').innerHTML=html;drawMap(rows)}
     function cardHTML(p){
       const cat=catById(p.cat),d=distance(p),r=reviewInfo(p),h=hoursInfo(p);
       const coordsValid=Number.isFinite(p.lat)&&Number.isFinite(p.lon);
@@ -325,7 +346,9 @@
         if(match)category=match.cat;
       }
       if(category&&category!==state.cat)selectCat(category);
-      state.searchTerm=name;
+      state.lastQuery=text.trim();
+      const matched=curatedHere().find(p=>norm(text).includes(norm(p.name)));
+      state.searchTerm=matched?norm(matched.name):(category?'':name);
       state.priceMax=parsed.priceMax;
       if(parsed.now&&state.mode==='demo')state.filters.open=true;
       updateFilters();
