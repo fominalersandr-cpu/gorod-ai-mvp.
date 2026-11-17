@@ -76,14 +76,27 @@
     @media(max-width:370px){.cat b{font-size:9px}.topright .pill{padding:8px}.hero h1{font-size:42px}.searchbox input{font-size:13px}}
     @media(prefers-reduced-motion:reduce){.cat,.card{transition:none}.cat:hover,.card:hover{transform:none}}
     .source-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}.source-actions .ghost{padding:9px 12px;font-size:12px}.source-actions .ghost:disabled{opacity:.5;cursor:progress}
+
+    /* Search history and branding v0.6 */
+    .logo .mark{background:linear-gradient(145deg,#217cff,#073dc1);color:#fff;font-weight:900;font-size:25px;letter-spacing:-1px;border:1px solid rgba(172,205,255,.42);box-shadow:0 6px 24px rgba(10,91,248,.32)}
+    .logo .wordmark{color:#fff;letter-spacing:.1px;font-weight:850;white-space:nowrap}
+    .searchbox input::placeholder{color:rgba(202,216,243,.48);opacity:1;font-weight:500}
+    .search-history{width:min(100%,920px);display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .search-history[hidden]{display:none}
+    .history-label{font-size:12px;color:#879cbb;margin-right:4px}
+    .history-item{background:rgba(24,40,68,.85);border:1px solid rgba(128,166,227,.26);border-radius:40px;color:#dce8ff;font-size:12px;padding:7px 13px;max-width:min(70vw,300px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .history-item:hover{border-color:rgba(101,225,237,.6);background:rgba(41,67,105,.75)}
+    .history-clear{border:0;background:transparent;color:#8ea7c7;font-size:11px;padding:7px 5px}
+    .history-clear:hover{color:#fff}
+    @media(max-width:650px){.logo .mark{font-size:21px}.logo .wordmark{font-size:18px}.search-history{justify-content:flex-start}}
   </style>
 </head>
 <body>
   <div class="ambient"><div class="gridback"></div></div>
   <div class="wrap">
     <header class="topbar">
-      <a href="#top" class="logo" aria-label="На главную"><span class="mark">⌁</span><span>ГОРОД<span style="color:var(--cyan)">•AI</span><small>Рабочее название</small></span></a>
-      <div class="topright"><span class="tiny">Мобильный прототип · v0.5</span><button id="businessTop" class="pill" type="button">Для бизнеса ↗</button></div>
+      <a href="#top" class="logo" aria-label="Я ГОРОД AI — на главную"><span class="mark" aria-hidden="true">Я</span><span class="wordmark">ГОРОД AI</span></a>
+      <div class="topright"><span class="tiny">Мобильный прототип · v0.6</span><button id="businessTop" class="pill" type="button">Для бизнеса ↗</button></div>
     </header>
     <main id="top">
       <section class="hero">
@@ -94,8 +107,8 @@
             <p class="lede">Скажи, что тебе нужно, — и получи подходящие места рядом. Умный поиск организаций, рейтинги, маршруты и бизнес-профили в одном приложении.</p>
           </div>
           <div class="searchhub">
-            <form class="searchbox" id="intentForm"><span class="spark" aria-hidden="true">✦</span><input id="intent" autocomplete="off" aria-label="Опиши свою задачу" placeholder="Название компании или услуга, например «Янот»"><button class="mic" type="button" id="mic" title="Голосовой ввод" aria-label="Голосовой ввод">🎙</button><button class="action" type="submit">Поиск</button></form>
-            <div class="prompts" id="prompts"><button class="prompt" data-prompt="Хочу постричься сегодня" type="button">✂️ Постричься</button><button class="prompt" data-prompt="Где помыть машину рядом" type="button">🚘 Помыть авто</button><button class="prompt" data-prompt="Где поесть рядом" type="button">🍜 Поесть</button><button class="prompt" data-prompt="Найди ближайшую аптеку" type="button">💊 Аптека</button></div>
+            <form class="searchbox" id="intentForm"><span class="spark" aria-hidden="true">✦</span><input id="intent" autocomplete="off" aria-label="Опиши свою задачу" placeholder="Хочу..."><button class="mic" type="button" id="mic" title="Голосовой ввод" aria-label="Голосовой ввод">🎙</button><button class="action" type="submit">Поиск</button></form>
+            <div class="search-history" id="searchHistory" aria-label="Недавние поисковые запросы" hidden></div>
             <p class="notice">Ищи услугу или конкретную компанию по названию. Большинство точек загружается из OpenStreetMap; отдельные карточки дополнены сведениями с сайтов организаций. Каталог пока неполный.</p>
           </div>
           <div class="trustbar" aria-label="Возможности прототипа">
@@ -122,7 +135,7 @@
         </div>
       </section>
     </main>
-    <footer class="foot"><p>Прототип v0.5. При открытии загружаются реальные организации из OpenStreetMap (при доступности внешнего API). Данные демо-организаций вымышлены. Реальные точки загружаются из OpenStreetMap через публичный Overpass API, полнота и актуальность не гарантируются. Личные оценки и бизнес-карточки хранятся только в браузере устройства. Геолокация используется после разрешения. Для публичного запуска потребуются сервер, модерация отзывов и лицензии на используемые данные.</p><span>© Проект «Город • AI» · 2026</span></footer>
+    <footer class="foot"><p>Прототип v0.6. При открытии загружаются реальные организации из OpenStreetMap (при доступности внешнего API). Данные демо-организаций вымышлены. Реальные точки загружаются из OpenStreetMap через публичный Overpass API, полнота и актуальность не гарантируются. Личные оценки и бизнес-карточки хранятся только в браузере устройства. Геолокация используется после разрешения. Для публичного запуска потребуются сервер, модерация отзывов и лицензии на используемые данные.</p><span>© Проект «Город • AI» · 2026</span></footer>
   </div>
 
   <dialog id="placeDialog" aria-labelledby="placeTitle" style="width:min(94vw,560px);max-height:85vh;overflow:auto;border:1px solid #344f79;border-radius:22px;background:#111b2e;color:#f1f6ff;padding:22px">
